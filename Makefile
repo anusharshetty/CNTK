@@ -598,7 +598,6 @@ SRC+=$(EVALLIB_SRC)
 $(EVALLIB): $(EVALLIB_OBJ) | $(CNTKMATH_LIB)
 	@echo $(SEPARATOR)
 	$(CXX) $(LDFLAGS) -static $(patsubst %,-L%, $(LIBDIR) $(LIBPATH)) $(patsubst %,$(RPATH)%, $(ORIGINDIR) $(LIBPATH)) -o $@ $^ -l$(CNTKMATH)
-endif
 
 
 ########################################
