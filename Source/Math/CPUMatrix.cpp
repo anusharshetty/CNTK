@@ -469,7 +469,7 @@ template <class ElemType>
 void CPUMatrix<ElemType>::MinusOneAt(CPUMatrix<ElemType>& c, const size_t position)
 {
     if (position < c.GetNumElements())
-        c.Data()[position] -= 1.0;
+        c.Data()[position] -= 1;
     else
         RuntimeError("MinusOneAt: position is out of CPU matrix size");
 }
@@ -1178,10 +1178,10 @@ ElemType CPUMatrix<ElemType>::Adagrad(CPUMatrix<ElemType>& gradients, const bool
         a[i + 2] += d_v[i + 2] * d_v[i + 2];
         a[i + 3] += d_v[i + 3] * d_v[i + 3];
 
-        a0 = sqrt(a[i] + floor);
-        a1 = sqrt(a[i + 1] + floor);
-        a2 = sqrt(a[i + 2] + floor);
-        a3 = sqrt(a[i + 3] + floor);
+        a0 = (ElemType) sqrt(a[i] + floor);
+        a1 = (ElemType) sqrt(a[i + 1] + floor);
+        a2 = (ElemType) sqrt(a[i + 2] + floor);
+        a3 = (ElemType) sqrt(a[i + 3] + floor);
 
         d_v[i] /= a0;
         d_v[i + 1] /= a1;
@@ -1199,7 +1199,7 @@ ElemType CPUMatrix<ElemType>::Adagrad(CPUMatrix<ElemType>& gradients, const bool
     {
         a[i] += d_v[i] * d_v[i];
 
-        a0 = sqrt(a[i] + floor);
+        a0 = (ElemType) sqrt(a[i] + floor);
         d_v[i] /= a0;
 
         if (needAveMultiplier)
@@ -1242,21 +1242,21 @@ void CPUMatrix<ElemType>::FSAdagrad(CPUMatrix<ElemType>& gradients,
     for (long i = 0; i < n; i++)
     {
         ElemType g = grad[i];
-        ElemType adaSqr = adaWeight * smoothAda[i] + (1.0f - adaWeight) * g * g;
+        ElemType adaSqr = adaWeight * smoothAda[i] + (1 - adaWeight) * g * g;
         smoothAda[i] = adaSqr;
-        if (adaSqr != 0.0f)
+        if (adaSqr != 0)
         {
             ElemType ada = sqrt(adaSqr);
             ElemType w = adaMul * ((ElemType) 1.0 / ada);
 
-            if (w > 10.0f)
-                w = 10.0f;
+            if (w > 10)
+                w = 10;
             g *= w;
         }
 
-        if (momentum > 0.0f)
+        if (momentum > 0)
         {
-            g = momentum * smoothMom[i] + (1.0f - momentum) * g;
+            g = momentum * smoothMom[i] + (1 - momentum) * g;
             smoothMom[i] = g;
         }
 
@@ -1347,7 +1347,7 @@ ElemType CPUMatrix<ElemType>::RmsProp(CPUMatrix<ElemType>& gradients,
         else
             steps[i] = std::max(steps[i] * RMS_WGT_DEC, RMS_WGT_MIN);
 
-        a = steps[i] / sqrt(avars[i] + floor);
+        a = (ElemType) (steps[i] / sqrt(avars[i] + floor));
         curr_grad[i] *= a;
         signs[i] = (ElemType) grad_sign;
 
@@ -2111,7 +2111,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignSigmoidOf(const CPUMatrix<ElemTy
     foreach_coord (i, j, us)
     {
         if (a(i, j) >= 0)
-            us(i, j) = 1 / (1 + exp(-a(i, j)));
+            us(i, j) = (ElemType)(1 / (1 + exp(-a(i, j))));
         else
         {
             ElemType v = exp(a(i, j));
@@ -2145,15 +2145,15 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignLinearRectifierDerivativeOf(cons
         // four-way unrolling
         for (long i = 0; i < (m & ~3); i += 4)
         {
-            us(i, j) = a(i, j) > 0.0f ? 1.0f : 0.0f;
-            us(i + 1, j) = a(i + 1, j) > 0.0f ? 1.0f : 0.0f;
-            us(i + 2, j) = a(i + 2, j) > 0.0f ? 1.0f : 0.0f;
-            us(i + 3, j) = a(i + 3, j) > 0.0f ? 1.0f : 0.0f;
+            us(i, j) = a(i, j) > 0 ? 1 : 0;
+            us(i + 1, j) = a(i + 1, j) > 0 ? 1 : 0;
+            us(i + 2, j) = a(i + 2, j) > 0 ? 1 : 0;
+            us(i + 3, j) = a(i + 3, j) > 0 ? 1 : 0;
         }
         // handle remaining stuffs
         for (long i = m & ~3; i < m; i++)
         {
-            us(i, j) = a(i, j) > 0.0f ? 1.0f : 0.0f;
+            us(i, j) = a(i, j) > 0 ? 1 : 0;
         }
     }
 
@@ -2230,15 +2230,15 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignTanhOf(const CPUMatrix<ElemType>
         // four-way unrolling
         for (long i = 0; i < (m & ~3); i += 4)
         {
-            us(i, j) = tanh(a(i, j));
-            us(i + 1, j) = tanh(a(i + 1, j));
-            us(i + 2, j) = tanh(a(i + 2, j));
-            us(i + 3, j) = tanh(a(i + 3, j));
+            us(i, j) = (ElemType) tanh(a(i, j));
+            us(i + 1, j) = (ElemType) tanh(a(i + 1, j));
+            us(i + 2, j) = (ElemType) tanh(a(i + 2, j));
+            us(i + 3, j) = (ElemType) tanh(a(i + 3, j));
         }
         // handle remaining stuffs
         for (long i = m & ~3; i < m; i++)
         {
-            us(i, j) = tanh(a(i, j));
+            us(i, j) = (ElemType) tanh(a(i, j));
         }
     }
 
@@ -2274,8 +2274,8 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignLogSoftmaxOf(const CPUMatrix<Ele
 
             ElemType sum = 0;
             foreach_row (i, a)
-                sum += exp(us(i, j) = a(i, j) - maxV);
-            sum = log(sum);
+                sum += (ElemType) exp(us(i, j) = a(i, j) - maxV);
+            sum = (ElemType) log(sum);
             foreach_row (i, us)
                 us(i, j) -= sum;
         }
@@ -2292,8 +2292,8 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignLogSoftmaxOf(const CPUMatrix<Ele
 
             ElemType sum = 0;
             foreach_column (j, a)
-                sum += exp(us(i, j) = a(i, j) - maxV);
-            sum = log(sum);
+                sum += (ElemType) exp(us(i, j) = a(i, j) - maxV);
+            sum = (ElemType) log(sum);
             foreach_column (j, us)
                 us(i, j) -= sum;
         }
@@ -2338,7 +2338,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignHardmaxOf(const CPUMatrix<ElemTy
             }
 
             foreach_row (i, us)
-                us(i, j) = (i == maxI) ? 1.0f : 0.0f;
+                us(i, j) = (i == maxI) ? 1 : 0;
         }
     }
     else
@@ -2359,7 +2359,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignHardmaxOf(const CPUMatrix<ElemTy
             }
 
             foreach_column (j, us)
-                us(i, j) = (j == maxJ) ? 1.0f : 0.0f;
+                us(i, j) = (j == maxJ) ? 1 : 0;
         }
     }
 
@@ -2392,15 +2392,15 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignSqrtOf(const CPUMatrix<ElemType>
         // four-way unrolling
         for (long i = 0; i < (m & ~3); i += 4)
         {
-            us(i, j)     = sqrt(max((ElemType)0, a(i, j)));
-            us(i + 1, j) = sqrt(max((ElemType)0, a(i + 1, j)));
-            us(i + 2, j) = sqrt(max((ElemType)0, a(i + 2, j)));
-            us(i + 3, j) = sqrt(max((ElemType)0, a(i + 3, j)));
+            us(i, j) = (ElemType) sqrt(max((ElemType)0, a(i, j)));
+            us(i + 1, j) = (ElemType) sqrt(max((ElemType)0, a(i + 1, j)));
+            us(i + 2, j) = (ElemType) sqrt(max((ElemType)0, a(i + 2, j)));
+            us(i + 3, j) = (ElemType) sqrt(max((ElemType)0, a(i + 3, j)));
         }
         // remaining
         for (long i = m & ~3; i < m; i++)
         {
-            us(i, j) = sqrt(max((ElemType)0, a(i, j)));
+            us(i, j) = (ElemType) sqrt(max((ElemType)0, a(i, j)));
         }
     }
 
@@ -2431,10 +2431,10 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignExpOf(const CPUMatrix<ElemType>&
         // four-way unrolling
         for (long i = 0; i < (m & ~3); i += 4)
         {
-            us(i, j) = exp(a(i, j));
-            us(i + 1, j) = exp(a(i + 1, j));
-            us(i + 2, j) = exp(a(i + 2, j));
-            us(i + 3, j) = exp(a(i + 3, j));
+            us(i, j) = (ElemType) exp(a(i, j));
+            us(i + 1, j) = (ElemType) exp(a(i + 1, j));
+            us(i + 2, j) = (ElemType) exp(a(i + 2, j));
+            us(i + 3, j) = (ElemType) exp(a(i + 3, j));
         }
         // handle remaining stuffs
         for (long i = m & ~3; i < m; i++)
@@ -2545,7 +2545,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignLog10Of(const CPUMatrix<ElemType
             us(i, j) = LOG10_OF_EPS_IN_LOG;
         }
         else
-            us(i, j) = log10(v);
+            us(i, j) = (ElemType) log10(v);
     }
 
     return *this;
@@ -2599,7 +2599,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignNegativeSineOf(const CPUMatrix<E
     foreach_coord (i, j, a)
     {
         const ElemType v = a(i, j);
-        us(i, j) = -sin(v);
+        us(i, j) = (ElemType) -sin(v);
     }
 
     return *this;
@@ -2973,7 +2973,7 @@ void CPUMatrix<ElemType>::VectorNorm1(CPUMatrix<ElemType>& c, const bool isColWi
             foreach_row (i, us)
             {
 #pragma omp atomic
-                v += abs(us(i, j));
+                v += (ElemType) abs(us(i, j));
             }
             c(0, j) = v;
         }
@@ -2989,7 +2989,7 @@ void CPUMatrix<ElemType>::VectorNorm1(CPUMatrix<ElemType>& c, const bool isColWi
             foreach_column (j, us)
             {
 #pragma omp atomic
-                v += abs(us(i, j));
+                v += (ElemType) abs(us(i, j));
             }
             c(i, 0) = v;
         }
@@ -3360,7 +3360,7 @@ ElemType CPUMatrix<ElemType>::MatrixNorm1() const
 #pragma omp parallel for reduction(+ : sum)
     foreach_coord (i, j, us)
     {
-        sum += abs(us(i, j));
+        sum += (ElemType) abs(us(i, j));
     }
     return sum;
 }
@@ -3760,9 +3760,9 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignPackedConvolutionInput(const CPU
             long x0 = 0, y0 = 0, x1 = 0, y1 = 0;
             if (zeroPadding)
             {
-                x0 = (long) max((ElemType)0, ceil((x - (ElemType)kernelHeight + 1.0f + halfKernelHeight) / (ElemType)verticalSubsample)); // row : first wrow in which x is in
+                x0 = (long) max((ElemType)0, ceil((x - (ElemType)kernelHeight + 1 + halfKernelHeight) / (ElemType)verticalSubsample)); // row : first wrow in which x is in
                 x1 = (long) (x + halfKernelHeight - x0 * verticalSubsample);                                                      // first posxInKernel
-                y0 = (long) max((ElemType)0, ceil((y - (ElemType)kernelWidth + 1.0f + halfKernelWidth) / (ElemType)horizontalSubsample)); // col : first wcol in which y is in
+                y0 = (long) max((ElemType)0, ceil((y - (ElemType)kernelWidth + 1 + halfKernelWidth) / (ElemType)horizontalSubsample)); // col : first wcol in which y is in
                 y1 = (long) (y + halfKernelWidth - y0 * horizontalSubsample);                                                     // first posyInKernel
             }
             else
@@ -3830,9 +3830,9 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::UnpackConvolutionInput(CPUMatrix<ElemT
             long x0 = 0, y0 = 0, x1 = 0, y1 = 0;
             if (zeroPadding)
             {
-                x0 = (long) max((ElemType)0, ceil((x - (ElemType) kernelHeight + 1.0f + halfKernelHeight) / (ElemType) verticalSubsample)); // row : first wrow in which x is in
+                x0 = (long) max((ElemType)0, ceil((x - (ElemType) kernelHeight + 1 + halfKernelHeight) / (ElemType) verticalSubsample)); // row : first wrow in which x is in
                 x1 = (long) (x + halfKernelHeight - x0 * verticalSubsample);                                                      // first posxInKernel
-                y0 = (long) max((ElemType)0, ceil((y - (ElemType) kernelWidth + 1.0f + halfKernelWidth) / (ElemType) horizontalSubsample)); // col : first wcol in which y is in
+                y0 = (long) max((ElemType)0, ceil((y - (ElemType) kernelWidth + 1 + halfKernelWidth) / (ElemType) horizontalSubsample)); // col : first wcol in which y is in
                 y1 = (long) (y + halfKernelWidth - y0 * horizontalSubsample);                                                     // first posyInKernel
             }
             else
@@ -3896,8 +3896,8 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AssignMaxPoolingResult(const CPUMatrix
             const long x = (long) (nXC / channels);                              // wrow
             const long c = (long) (nXC % channels);                              // channel
 
-            ElemType maxVal = -FLT_MAX;
-            ElemType minVal = FLT_MAX;
+            ElemType maxVal = (ElemType) - FLT_MAX;
+            ElemType minVal = (ElemType) FLT_MAX;
             const long rowInWindowBase = (long) ((x * verticalSubsample + y * horizontalSubsample * inputHeight) * channels + c);
             for (long colInWindow = 0; colInWindow < windowWidth; colInWindow++)
             {
@@ -4050,7 +4050,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::AddAveragePoolingGradient(const CPUMat
                 for (long outX = startOutX; outX <= endOutX; outX++)
                 {
                     long outputIndex = outY * outputHeightTimesChannel + outX * (long) channels + c;
-                    (*this)(inputIndexWithinSample, sample) += outputGradientBatch(outputIndex, sample) / windowSize;
+                    (*this)(inputIndexWithinSample, sample) += (ElemType) (outputGradientBatch(outputIndex, sample) / windowSize);
                 }
             }
         }
@@ -5881,7 +5881,7 @@ void CPUMatrix<ElemType>::RCRFTransGrdCompute(const CPUMatrix<ElemType>& lbls,
             }
         }
 
-        grd(j, i) -= 1.0;
+        grd(j, i) -= 1;
     }
 };
 
@@ -5956,7 +5956,7 @@ void CPUMatrix<ElemType>::_rcrfTransGrdCompute(size_t i,
             fTmp -= fSum;
             fTmp += b(j, 0);
 
-            grd(j, i) += exp(fTmp);
+            grd(j, i) += (ElemType) exp(fTmp);
         }
     }
 };
@@ -5974,7 +5974,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::DropFrame(const CPUMatrix<ElemType>& l
         bool dropframe = false;
         foreach_row (i, label)
         {
-            if (fabs(label(i, j) - 1.0f) < 0.1)
+            if (fabs(label(i, j) - 1) < 0.1)
             {
                 if (gamma(i, j) < threshhold)
                     dropframe = true;
@@ -5984,7 +5984,7 @@ CPUMatrix<ElemType>& CPUMatrix<ElemType>::DropFrame(const CPUMatrix<ElemType>& l
 
         foreach_row (i, label)
         {
-            us(i, j) = 0.0f;
+            us(i, j) = 0;
         }
     }
 
